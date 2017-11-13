@@ -40,7 +40,10 @@ In order to run the project, the following technologies will need to be installe
 
 * Docker
     * [Mac](  https://download.docker.com/mac/stable/Docker.dmg)
+        * Make sure to allocate at least 4 GB of RAM to docker. Otherwise MSSQL won't work.
     * [Windows](https://download.docker.com/win/stable/Docker%20for%20Windows%20Installer.exe)
+        * Make sure to allocate at least 4 GB of RAM to docker. Otherwise MSSQL won't work.
+        * Configure 'Settings > Shared Drives > C' to be shareable
 
 * SDK Permissions
     * With your bash shell of choice, run `chmod +x sdk` in the root of this repository
@@ -100,7 +103,12 @@ Command                                  | Description
             * `- /app/bin`
             * `- ~/.nuget:/root/.nuget`
             * `- /root/.nuget/packages/.tools`
-* Add support for
+* Add support for auto-deploying to various platforms
+    * Azure
+    * Amazon
+    * Heroku
+* Example for using HAProxy for load balancing
+* Use of docker swarm
 
 
 ## Troubleshooting
