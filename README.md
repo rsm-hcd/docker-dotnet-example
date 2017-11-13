@@ -50,6 +50,28 @@ If everything worked properly, you should be on your way to making changes, as t
 
 Note: If you want to explore the SDK in more detail, simply run `./sdk` and read the available commands and examples
 
+
+## SDK Command Reference
+
+Command                                  | Description
+-----------------------------------------|------------------
+`./sdk`                                  | Displays help describing commands and examples
+`./sdk clean`                            | Removes project related images and kills all containers based on those images
+`./sdk clean-migration [migration-name]` | Create new dotnet entity framework migration
+`./sdk delete-migration`                 | Removes most recent entity framework migration
+`./sdk dotnet-build`                     | Build the dotnet solution from the root of the project
+`./sdk dotnet-restore`                   | Restore the dotnet solution from the root of the project
+`./sdk info`                             | Shows build details (ie. user, versions)
+`./sdk open`                             | Open the application root path in your system default web browser
+`./sdk run`                              | Starts the project in debug mode. Performs re-build of docker image, restores npm and nuget packages and starts up docker-compose
+`./sdk run --fast`                       | Same as `run`, but skips all dependency and project build steps to get to execution as fast as possible
+`./sdk run --no-build`                   | Same as `run`, but skips build of docker images (leverages cache)
+`./sdk run --no-restore`                 | Same as `run`, but skips npm and nuget package restores
+`./sdk run-release`                      | Builds and starts a release build docker image
+`./sdk run-web`                          | Locally runs only the web project (not with docker). Typically used when developer wants to maximize backend development performance and is selectively using docker
+`./sdk run-web --no-restore`             | Same as `run-web`, but skips npm and nuget package restores
+
+
 **Troubleshooting**
 
 * Default ports are already in use in my machine OR I'd simply like to change it...
