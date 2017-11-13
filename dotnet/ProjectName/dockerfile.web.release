@@ -1,0 +1,34 @@
+# ------------------------------------------------------
+# Stage 1: Build Image
+# ------------------------------------------------------
+FROM microsoft/aspnetcore-build:2 as build-env
+
+# Environment Variables
+# ---------------------
+
+ENV NUGET_XMLDOC_MODE skip
+
+# Buildtime
+# ---------
+
+COPY . /app
+WORKDIR /app
+
+# restore and publish solution
+RUN dotnet restore ProjectName.sln
+RUN dotnet publish ProjectName.sln --output /publish --configuration Release
+
+
+# ------------------------------------------------------
+# Stage 2: Runtime Image
+# ------------------------------------------------------
+
+FROM microsoft/aspnetcore:2
+
+WORKDIR /app
+
+COPY --from=build-env /publish .
+
+EXPOSE 80
+
+ENTRYPOINT ["dotnet", "Web.dll"]

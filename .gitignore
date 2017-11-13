@@ -1,0 +1,71 @@
+*.swp
+*.*~
+project.lock.json
+.DS_Store
+*.pyc
+
+
+# EMACS
+*~
+\#*
+.\#*
+
+
+# Visual Studio Code
+.vscode/*
+!.vscode/settings.json
+
+
+# User-specific files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+
+# Build results
+BuildArtifacts
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+build/
+bld/
+[Bb]in/
+[Oo]bj/
+msbuild.log
+msbuild.err
+msbuild.wrn
+
+
+# Node
+node_modules
+npm-debug.log
+
+
+# Visual Studio Windows
+.vs/
+
+# Upgrades
+dotnet/Backup
+dotnet/UpgradeLog.htm
+
+
+# Presentation.Web
+dotnet/ProjectName/Presentation/Web/Logs/
+dotnet/ProjectName/Presentation/Web/wwwroot/
+
+
+# Frontend
+frontend/.awcache/
+frontend/src/assets/icons/
+frontend/routes.ts
+frontend/wwwroot/
+*.userprefs
+
+
+# Docker
+.env
+.docker-sync/

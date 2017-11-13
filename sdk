@@ -1,0 +1,459 @@
+#!/bin/bash
+
+# Variables
+# ------------------------
+
+colorPurple='\033[1;35m'
+colorRed='\033[0;31m'
+colorClear='\033[0m'
+colorWhite='\033[1;37m'
+
+containerId=unset
+
+dotnetBuildArtifactsDir=BuildArtifacts
+
+flagFast=false 
+flagNoBuild=false
+flagNoRestore=false
+
+isLinux=false
+isMac=false
+isWindows=false
+
+os="`uname`"
+osSpecificDockerComposeDebugFile=""
+
+sdkAbsolutePath="`pwd`"
+
+version=0.1
+
+
+# Variable post-processing
+# ------------------------
+
+# Detect operating system
+if [[ $os = "Darwin" ]]; then
+    isMac=true
+    osSpecificDockerComposeDebugFile=docker-compose.debug.macosx.yml
+elif [[ $os = "Linux" ]]; then
+    isLinux=true
+    osSpecificDockerComposeDebugFile=docker-compose.debug.linux.yml
+else
+    isWindows=true
+    osSpecificDockerComposeDebugFile=docker-compose.debug.windows.yml
+fi
+
+
+# Functions
+# ------------------------
+
+# Builds the dotnet solution
+buildDotnetSolution() {
+    dotnet build $DOTNET_SOLUTION_FILE_PATH
+}
+
+# Kills all running containers of an image and then removes them
+cleanAll() {
+    # Remove docker compose described resources
+    showMessage "Cleaning docker-compose services..."
+    docker-compose -f docker-compose.debug.yml -f $osSpecificDockerComposeDebugFile down --rmi all
+
+    # Remove any dangling images (from previous builds)
+    showMessage "Cleaning lingering docker images..."
+    danglingImages=$(docker images -q --filter 'dangling=true')
+    if [[ ! -z $danglingImages ]]; then
+        docker rmi -f $danglingImages
+    fi
+
+    # Mac-only
+    if [[ $isMac = true ]]; then
+        showMessage "Cleaning docker-sync file syncing volume(s)..."
+        docker-sync clean
+    fi
+
+    showMessage "Clean completed."
+}
+
+# Cleans the local (aka host) machine's dotnet build directory
+cleanLocalDotnetBuildDirectory() {
+    showMessage "Cleaning output directory '${dotnetBuildArtifactsDir}..."
+    rm -rf $dotnetBuildArtifactsDir
+    mkdir $dotnetBuildArtifactsDir
+}
+
+# Convience method to create new entity framework migrations from the root of the project
+# - params
+#   (1) migration name
+createDotnetEntityFrameworkMigration() {
+    migrationName=$1
+
+    if [ -z "$migrationName" ]; then
+        showError "Migration name is required"
+        exit 1;
+    fi
+
+    absoluteWebProjectPath="${sdkAbsolutePath}/${WEB_PROJECT_PATH}"
+
+    pushd $DATABASE_PROJECT_PATH
+    dotnet ef migrations add $migrationName --startup-project $absoluteWebProjectPath --verbose
+    popd
+}
+
+# Creates release image and pushes it to docker hub for deployment
+createReleaseBuild() {
+    version=$1
+    webSourceTag="${PROJECT_DOCKER_REPOSITORY}:web"
+    webTargetTag="${webSourceTag}-${version}"
+
+    if [ -z "$version" ]; then
+        showError "Version is required"
+        exit 1;
+    fi
+
+    # builds all images in docker compose release yml
+    docker-compose -f docker-compose.release.yml build
+
+    # tag individual images
+    # todo: refactor to loop through each '$RELEASE_SERVICES' and perform this call
+    docker tag $webSourceTag $webTargetTag
+
+    # push individual images
+    # todo: refactor to loop through each '$RELEASE_SERVICES' and perform this call
+    docker push $webTargetTag
+}
+
+# Convience method to delete most recent entity framework migration from the root of the project
+deleteDotnetEntityFrameworkMigration() {
+    absoluteWebProjectPath="${sdkAbsolutePath}/${WEB_PROJECT_PATH}"
+
+    pushd $DATABASE_PROJECT_PATH
+    dotnet ef migrations remove --startup-project $absoluteWebProjectPath --verbose
+    popd
+}
+
+# Returns list of docker-compose services for a given yml file
+# listDockerComposeServices() {
+#     servicekeys=`cat docker-compose.debug.yml | docker run -i --rm jlordiales/jyparser get .services | docker run -i --rm jlordiales/jyparser get --raw-output keys[]`
+#     return $servicekeys
+# }
+
+# Environment variables
+loadEnvironmentVariables() {
+    if ! [ -e ".env" ]; then
+        showMessage "Environment variables files '.env' has not been created."
+        cp .env.development.sample .env
+        showMessage "  > Copied '.env.development.sample' to '.env'"
+    fi
+
+    # Loads environment variables
+    set -a
+    [ -f .env ] && . .env
+    set +a
+}
+
+# Opens the web application's primary route in the system default web browser
+openBrowser() {
+    url="http://localhost:${WEB_PORT}"
+    if [[ $isWindows = true ]]; then
+        start $url
+    else
+        open $url
+    fi
+}
+
+# Restores dotnet solution nuget dependencies
+restoreDotnetSolution() {
+    dotnet restore $DOTNET_SOLUTION_FILE_PATH
+}
+
+# Builds debug container and runs it
+# - flags
+#   --fast: shortcut flag that trumps other flags and configures to execute project fastest (ie. no build, no restore)
+#   --no-build: can skip having docker and dotnet perform a build. Ignored if --fast is true.
+#   --no-restore: can skip reinstalling nuget and npm dependencies. Ignored if --fast is true.
+runDebugBuild() {
+
+    if [[ $flagFast = true ]]; then
+        flagNoBuild=true
+        flagNoRestore=true
+    fi
+
+    if [[ $flagNoRestore = true ]]; then
+        export STARTUP_REINSTALL_DEPENDENCIES=false
+    fi
+
+    # Mac-only startup
+    if [[ $isMac = true ]]; then
+        if ! [ $flagFast = true ]; then
+            docker-sync clean # we clean up to ensure docker-sync isn't caching files
+        fi
+        showMessage "Starting Mac OSX and Docker Linux file syncing bridge (via docker sync)..."
+        docker-sync start # if it is already started, who cares
+    fi
+
+    showMessage "Starting various project services (via docker compose)..."
+    if [[ $flagNoBuild = true ]]; then
+        docker-compose -f docker-compose.debug.yml -f $osSpecificDockerComposeDebugFile up $STARTUP_SERVICES
+    else
+        docker-compose -f docker-compose.debug.yml -f $osSpecificDockerComposeDebugFile up --build $STARTUP_SERVICES
+    fi
+}
+
+# Runs web locally without docker
+# - flags
+#   --no-restore: can skip reinstalling npm dependencies
+runLocalWeb() {
+
+    # So dotnet run will use our configured port
+    export ASPNETCORE_URLS="http://localhost:${WEB_PORT}"
+
+    # If restoring, install npm and nuget dependencies!
+    if [ $flagNoRestore = false ]; then
+        showMessage "Installing dotnet nuget dependencies..."
+        dotnet restore $DOTNET_SOLUTION_FILE_PATH
+
+        showMessage "Installing node npm dependencies..."
+        pushd $WEB_PROJECT_PATH
+        rm -rf node_modules/node-sass
+        npm install
+        popd
+    fi
+
+    cleanLocalDotnetBuildDirectory
+
+    showMessage "Running project (via npm 'start' script)..."
+    pushd $WEB_PROJECT_PATH
+    npm run start
+    popd
+}
+
+# Can be run after a debug build to interactively debug (visual studio code's launch.json references this to initiate debug sessions)
+# runDotnetDebuggerCli() {
+#     showMessage "Debugging container '$containerId'..."
+#     docker exec -i $containerId /clrdbg/clrdbg --interpreter=mi
+# }
+
+# Builds release container and runs it (does NOT deploy)
+runReleaseBuild() {
+    docker-compose -f docker-compose.release.yml up --build
+}
+
+# Shows general build information to aid in troubleshooting
+showBuildInfo() {
+    echo -e ""
+    echo -e "-----------------------------------------------------"
+    echo -e "${colorPurple}Build Info...${colorClear}"
+    echo -e "-----------------------------------------------------"
+
+    echo ""
+    echo whoami:
+    whoami
+
+    echo ""
+    echo PATH:
+    echo $PATH
+
+    echo ""
+    echo Docker version...
+    docker version
+    echo ""
+}
+
+showError() {
+    errorMessage=$1
+    echo -e "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+    showNewline
+    echo -e "${colorRed}ERROR:${colorClear} ${errorMessage}"
+    showNewline
+    echo -e "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+}
+
+showMessage() {
+    message=$1
+    echo -e "${colorPurple}[sdk]${colorClear} ${message}"
+}
+
+# Simple human readable way to print empty newlines
+showNewline() {
+    echo ""
+}
+
+# Simple way to output a standardized colored heading
+showHeading() {
+    color=$colorWhite
+    message=$1
+    if [ $# -eq 2 ]; then
+        color=$2
+    fi
+    echo -e $color$message$colorClear
+}
+
+# Shows command usage for SDK
+showUsage() {
+    showNewline
+    echo -e "${colorPurple}SDK${colorClear} (Version $version - ${os})"
+    showHeading "Usage:"
+    echo -e "    ./sdk [COMMAND]"
+    showNewline
+    showHeading "Commands:"
+    echo -e "    clean:            Removes project related images and kills all containers based on those images."
+    echo -e "    create-migration: Create new dotnet entity framework migration"
+    showNewline
+    echo -e "                      params:"
+    echo -e "                          1: migration name  -- ex. ./sdk create-migration CreateNewEntity"
+    showNewline
+    echo -e "    delete-migration: Removes most recent entity framework migration"
+    echo -e "    dotnet-build:     Build the dotnet solution from the root of the project"
+    echo -e "    dotnet-restore:   Restore the dotnet solution from the root of the project"
+    echo -e "    info:             Shows build details (ie. user, versions)"
+    echo -e "    open:             Open the application root path in your system default web browser"
+    echo -e "    run:              Starts the project in debug mode."
+    echo -e "                      Performs re-build of docker image, restores npm and nuget packages and starts up docker-compose"
+    showNewline
+    echo -e "                      flags:"
+    echo -e "                          --fast       : skips all dependency and project build steps to get to execution as fast as possible"
+    echo -e "                          --no-build   : skips build of docker images (leverages cache)"
+    echo -e "                          --no-restore : skips npm and nuget package restores;"
+    showNewline
+    echo -e "    run-release:      Builds and starts a release build image"
+    showNewline
+    echo -e "    run-web:          Locally runs only the web project (not with docker)"
+    echo -e "                      Typically used when developer wants to maximize backend development performance and is selectively using docker."
+    showNewline
+    echo -e "                      flags:"
+    echo -e "                          --no-restore : skips npm and nuget package restores;"
+    showNewline
+    showHeading "Examples:"
+    echo -e "    (1) Full build and run (easiest to use, uses docker, slowest startup time)"
+    showNewline
+    echo -e "        $: ./sdk run"
+    showNewline
+    echo -e "    (2) Already built, starting up for the day (fastest startup time)"
+    echo -e "        Uses docker image cache (if available) and skips npm and nuget installs"
+    showNewline
+    echo -e "        $: ./sdk run --fast"
+    showNewline
+    echo -e "    (3) Already built npm and nuget, but want to re-evaluate docker"
+    showNewline
+    echo -e "        $: ./sdk run --no-restore : rebuilds docker images, but skips npm and nuget installs"
+    showNewline
+    echo -e "    (4) Doing development locally, but leveraging docker for the database"
+    showNewline
+    echo -e "        a. Editing the '.env' file, add only 'database' to the 'STARTUP_SERVICES' environment variable (STARTUP_SERVICES=database)"
+    echo -e "        b. Startup docker infrastructure using only the database service..."
+    echo -e "            $: ./sdk run"
+    echo -e "        c. Open new shell/terminal window and explicitly startup web..."
+    echo -e "            $: ./sdk run-web"
+    showNewline
+}
+
+# Ensures required tools are installed or exit execution
+verifySystemRequirementsOrExit() {
+
+    # ALL Operating Systems
+    # ---------------------
+
+    # Docker
+    if ! [ -x "$(command -v docker)" ]; then
+        showError "Please install Docker and try again."
+        exit 1;
+    fi
+ 
+    # Mac OSX Only
+    # ------------
+
+    if [[ $isMac = true ]]; then
+
+        # Ruby (required by Docker Sync)
+        if ! [ -x "$(command -v gem)" ]; then
+            showError "Please install Ruby and try again."
+            exit 1;
+        fi
+
+        # Docker Sync
+        if ! [ -x "$(command -v docker-sync)" ]; then
+            showMessage "Docker Sync wasn't found. Attempting to install..."
+            gem install docker-sync
+
+            if ! [ -x "$(command -v docker-sync)" ]; then
+                showError "Unable to install 'docker-sync' automatically. Please visit 'http://docker-sync.io' and install it manually."
+                exit 1;
+            else
+                showMessage "Docker Sync was installed successfully."
+            fi
+        fi
+    fi
+}
+
+
+# Entrypoint
+# ------------------------
+
+loadEnvironmentVariables
+verifySystemRequirementsOrExit
+
+# No arguments? Show usage
+if [ $# -eq 0 ]; then
+    showUsage
+    exit 1;
+fi
+
+# Process optional flags
+if [[ $* = *--fast*       ]]; then  flagFast=true;       fi
+if [[ $* = *--no-build*   ]]; then  flagNoBuild=true;    fi
+if [[ $* = *--no-restore* ]]; then  flagNoRestore=true;  fi
+
+# Command router
+case "$1" in
+    "clean")
+        cleanAll
+        ;;
+    "create-migration")
+        migrationName=$2
+        createDotnetEntityFrameworkMigration $migrationName
+        ;;
+    "create-release")
+        version=$2
+        showBuildInfo
+        createReleaseBuild $version
+        ;;
+    "delete-migration")
+        migrationName=$2
+        deleteDotnetEntityFrameworkMigration $migrationName
+        ;;
+    "dotnet-build")
+        buildDotnetSolution
+        ;;
+    "dotnet-restore")
+        restoreDotnetSolution
+        ;;
+    "env")
+        loadEnvironmentVariables
+        ;;
+    "help")
+        showUsage
+        ;;
+    "info")
+        showBuildInfo
+        ;;
+    "open")
+        openBrowser
+        ;;
+    "run")
+        showBuildInfo
+        runDebugBuild
+        ;;
+    "run-release")
+        showBuildInfo
+        runReleaseBuild
+        ;;
+    "run-web")
+        showBuildInfo
+        runLocalWeb
+        ;;
+    *)
+        showUsage
+        exit 1
+        ;;
+esac
+

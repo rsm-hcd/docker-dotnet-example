@@ -1,0 +1,12 @@
+# Configures docker-sync volume to improve File IO performance on Mac OSX
+version: "3.3"
+
+services:
+  web:
+    volumes:
+      - docker-app-sync:/app:nocopy
+
+volumes:
+  docker-app-sync:
+    external:
+      name: "${PROJECT_NAME}-app-sync"

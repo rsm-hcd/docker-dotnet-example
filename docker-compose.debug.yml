@@ -1,0 +1,39 @@
+# ---------------------------------------------------------------------------------
+# Development Docker Compose file from which environment specific files inherit
+# ---------------------------------------------------------------------------------
+# Usage:
+#   - command: $: docker-compose -f docker-compose.debug.yml -f docker-compose.debug.{operating-system}.yml up
+#
+# Optional Environment Variables
+#   - command example: $: docker-compose run -e "arg1=value1" web
+#   - refer to .env and .env.{environment}.sample files for current defaults
+# ----------------------------------------------------------------------------------
+
+version: "3.3"
+
+services:
+  database:
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: "Developer"
+      SA_PASSWORD: ${DATABASE_PASSWORD-password}
+    image: microsoft/mssql-server-linux
+    ports:
+      - ${DATABASE_PORT-1433}:1433
+    volumes:
+      - projectname-mssql-data:/var/opt/mssql/data
+
+  web:
+    build:
+      context: ./dotnet/ProjectName
+      dockerfile: dockerfile.web.debug
+    depends_on:
+      - database
+    env_file: .env
+    links:
+      - database
+    ports:
+      - ${WEB_PORT-5000}:80
+
+volumes:
+  projectname-mssql-data:

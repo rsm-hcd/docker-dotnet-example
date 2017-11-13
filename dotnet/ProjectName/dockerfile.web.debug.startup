@@ -1,0 +1,29 @@
+#!/bin/bash
+
+# Requirements:
+# - Calling Dockerfile must set WORKDIR (Current directory) to the Web container's folder
+
+echo "Running docker entrypoint dockerfile.web.debug.startup..."
+echo "Restore dependencies: $STARTUP_REINSTALL_DEPENDENCIES"
+echo "Current directory:"
+pwd
+
+# Standard startup
+if [ ${STARTUP_REINSTALL_DEPENDENCIES} = false ]; then
+
+    echo "Starting dotnet project without restoring nuget packages. Please wait..."
+    dotnet run --no-restore
+
+else
+
+    echo "Restoring npm packages..."
+    rm -rf node_modules/node-sass
+    npm install
+
+    echo "Cleaning wwwroot folder..."
+    rm -rf wwwroot
+
+    echo "Running dotnet project. Please wait..."
+    dotnet run
+
+fi

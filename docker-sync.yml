@@ -1,0 +1,9 @@
+version: "2"
+
+options:
+  compose-file-path: "./docker-compose.yml"
+  compose-dev-file-path: "./docker-compose.debug.yml"
+  verbose: true
+syncs:
+  ${PROJECT_NAME}-app-sync:
+    src: "./dotnet/ProjectName"

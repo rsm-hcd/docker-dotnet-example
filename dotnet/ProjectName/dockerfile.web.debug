@@ -1,0 +1,52 @@
+# Web Debug Image
+# ----------------------------------------------------
+# - Will always be mounted with external file system.
+#   Image does NOT need to run standalone.
+#   This allows builds of image to be short
+#   and rely on the $STARTUP_FILE
+# ----------------------------------------------------
+# Usage:
+#   build manually
+#     command: $ docker build -t projectname-web .
+#   run pre-packaged files
+#     command: $ docker run --rm -i -p 3000:80 --name projectname-web -t projectname-web .
+#   run local files
+#     command: $ docker run --rm -i -p 3000:80 --name projectname-web -v ${PWD}:/app -t projectname-web .
+FROM microsoft/aspnetcore-build:2
+
+
+# Environment Variables
+# ---------------------
+
+ENV NUGET_XMLDOC_MODE skip
+ENV STARTUP_FILE /app/dockerfile.web.debug.startup
+
+
+# Install additional tooling
+# --------------------------
+
+# dos2unix: used to prevent windows from converting our line-endings
+RUN apt-get update && apt-get install -y dos2unix
+
+
+# Buildtime
+# ---------
+
+COPY . /app
+WORKDIR /app
+
+# gotta restore at the solution level
+RUN dotnet restore ProjectName.sln
+
+# assumed location by 'startup'
+WORKDIR /app/Presentation/Web 
+
+EXPOSE 80
+
+
+# Runtime
+# -------------------------
+
+ENTRYPOINT dos2unix $STARTUP_FILE && \
+           chmod +x $STARTUP_FILE && \
+           /bin/bash $STARTUP_FILE

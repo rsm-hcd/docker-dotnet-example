@@ -1,0 +1,23 @@
+# ---------------------------------------------------------------------------------
+# Production Docker Compose file from which environment specific files inherit
+# ---------------------------------------------------------------------------------
+# Usage:
+#   - command $: docker-compose -f docker-compose.release.yml up
+#
+# Optional Environment Variables
+#   - command example: $: docker-compose run -e "arg1=value1" web
+#   - refer to .env and .env.{environment}.sample files for current defaults
+#     - likely environments: production, staging
+# ---------------------------------------------------------------------------------
+
+version: "3.3"
+
+services:
+  web:
+    build:
+      context: ./dotnet/ProjectName
+      dockerfile: dockerfile.web.release
+    env_file: .env
+    image: yourdockerhuborg/projectname:web
+    ports:
+      - 5000:80
