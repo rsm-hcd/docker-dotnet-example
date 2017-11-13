@@ -18,13 +18,13 @@ The rule of onion architecture says that the core of the onion should be created
 ## Noteworthy
 
 * Docker Sync
-    * This tool is installed only Mac OSX clients to improve the performance of File IO when mounting a host Mac OSX project in a linux container.
+    * This tool is installed on Mac OSX clients to improve the performance of File IO when mounting a host Mac OSX project in a linux container.
     * Unfortunately the windows support is too complex to be useable (imho).
     * Hopefully this isn't necessary in the future as Microsoft and Docker invest in the development workflow story between the two technologies.
 
 * Environment variables strategy
     * The SDK, Docker and .NET Core all leverage the `.env` file (one configuration to rule them all)
-    * .NET Core `appsettings.json` should only be absolutely static settings. As soon as something becomes configurable, bubble it up the `.env` and the respective `.env.{environment}.sample` file.
+    * .NET Core `appsettings.json` should only contain static settings. As soon as something becomes configurable, bubble it up the `.env` and the respective `.env.{environment}.sample` file.
 
 * Logging
     * .NET Core `Program.cs` demonstrates using SeriLog in .NET Core v2. Allowing for dependency injection of `ILogger<T>` in `Startup.cs`
@@ -74,9 +74,9 @@ Command                                  | Description
 -----------------------------------------|-----------------------------------------------
 `./sdk`                                  | Displays help describing commands and examples
 `./sdk clean`                            | Removes project related images and kills all containers based on those images
-`./sdk clean-migration [migration-name]` | Create new dotnet entity framework migration
-`./sdk delete-migration`                 | Removes most recent entity framework migration
-`./sdk dotnet-build`                     | Build the dotnet solution from the root of the project
+`./sdk clean-migration [migration-name]` | Create new dotnet entity framework migration. Does not require valid database configuration.
+`./sdk delete-migration`                 | Removes most recent entity framework migration. Requires valid database configuration.
+`./sdk dotnet-build`                     | Build the dotnet solution from the root of the project. 
 `./sdk dotnet-restore`                   | Restore the dotnet solution from the root of the project
 `./sdk info`                             | Shows build details (ie. user, versions)
 `./sdk open`                             | Open the application root path in your system default web browser
@@ -100,5 +100,7 @@ Command                                  | Description
         * Under the hood it is simply doing a `cp .env.development.sample .env`
     * Simply run `./sdk`, which outputs the help, and it should be created
 
+* Trying to run `dotnet run` manually
+    * Sure, you'll have to manually load the `.env` file OR set them yourself on your system. Otherwise dotnet will likely runtime error due to configuration settings missing.
 
 
