@@ -74,19 +74,19 @@ Command                                  | Description
 -----------------------------------------|-----------------------------------------------
 `./sdk`                                  | Displays help describing commands and examples
 `./sdk clean`                            | Removes project related images and kills all containers based on those images
-`./sdk clean-migration [migration-name]` | Create new dotnet entity framework migration. Does not require valid database configuration.
-`./sdk create-release [version]`         | Builds a release build image with the supplied version tag and deploys it to the configured docker hub repository  
-`./sdk delete-migration`                 | Removes most recent entity framework migration. Requires valid database configuration.
+`./sdk clean-migration [migration-name]` | Create new dotnet entity framework migration.<br>Does not require valid database configuration.
+`./sdk create-release [version]`         | Builds a release build image with the supplied version<br>tag and deploys it to the configured docker hub repository  
+`./sdk delete-migration`                 | Removes most recent entity framework migration.<br>Requires valid database configuration.
 `./sdk dotnet-build`                     | Build the dotnet solution from the root of the project. 
 `./sdk dotnet-restore`                   | Restore the dotnet solution from the root of the project
 `./sdk info`                             | Shows build details (ie. user, versions)
 `./sdk open`                             | Open the application root path in your system default web browser
-`./sdk run`                              | Starts the project in debug mode. Performs re-build of docker image, restores npm and nuget packages and starts up docker-compose
-`./sdk run --fast`                       | Same as `run`, but skips all dependency and project build steps to get to execution as fast as possible
+`./sdk run`                              | Starts the project in debug mode. Performs re-build of docker image,<br>restores npm and nuget packages and starts up docker-compose
+`./sdk run --fast`                       | Same as `run`, but skips all dependency<br>and project build steps to get to execution as fast as possible
 `./sdk run --no-build`                   | Same as `run`, but skips build of docker images (leverages cache)
 `./sdk run --no-restore`                 | Same as `run`, but skips npm and nuget package restores
 `./sdk run-release`                      | Builds and starts a release build docker image
-`./sdk run-web`                          | Locally runs only the web project (not with docker). Typically used when developer wants to maximize backend development performance and is selectively using docker
+`./sdk run-web`                          | Locally runs only the web project (not with docker).<br>Typically used when developer wants to maximize backend development performance and is selectively using docker
 `./sdk run-web --no-restore`             | Same as `run-web`, but skips npm and nuget package restores
 
 
