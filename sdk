@@ -302,6 +302,11 @@ showUsage() {
     echo -e "                      params:"
     echo -e "                          1: migration name  -- ex. ./sdk create-migration CreateNewEntity"
     showNewline
+    echo -e "    create-release:   Builds a release build image with the supplied version tag and deploys it to the configured docker hub repository"
+    showNewline
+    echo -e "                      params:"
+    echo -e "                          1: version number  -- ex. ./sdk create-release v0.5"
+    showNewline
     echo -e "    delete-migration: Removes most recent entity framework migration"
     echo -e "    dotnet-build:     Build the dotnet solution from the root of the project"
     echo -e "    dotnet-restore:   Restore the dotnet solution from the root of the project"

@@ -75,6 +75,7 @@ Command                                  | Description
 `./sdk`                                  | Displays help describing commands and examples
 `./sdk clean`                            | Removes project related images and kills all containers based on those images
 `./sdk clean-migration [migration-name]` | Create new dotnet entity framework migration. Does not require valid database configuration.
+`./sdk create-release [version]`         | Builds a release build image with the supplied version tag and deploys it to the configured docker hub repository  
 `./sdk delete-migration`                 | Removes most recent entity framework migration. Requires valid database configuration.
 `./sdk dotnet-build`                     | Build the dotnet solution from the root of the project. 
 `./sdk dotnet-restore`                   | Restore the dotnet solution from the root of the project
@@ -87,6 +88,19 @@ Command                                  | Description
 `./sdk run-release`                      | Builds and starts a release build docker image
 `./sdk run-web`                          | Locally runs only the web project (not with docker). Typically used when developer wants to maximize backend development performance and is selectively using docker
 `./sdk run-web --no-restore`             | Same as `run-web`, but skips npm and nuget package restores
+
+
+## Future
+
+* Port sdk from bash to Node leveraging ShellJS
+* When Windows and Mac OSX prove legitimate for backend development, re-add nuget items as volumes so local editors don't have missing dependencies
+    * docker-compose.debug.yml
+        * `volumes:`
+            * `- /app/obj`
+            * `- /app/bin`
+            * `- ~/.nuget:/root/.nuget`
+            * `- /root/.nuget/packages/.tools`
+* Add support for
 
 
 ## Troubleshooting
