@@ -1,4 +1,4 @@
-# Docker & .NET Core Boilerplate
+# Docker & .NET Core Example
 
 ## Architecture Overview
 The project is built leveraging the following technologies:
@@ -15,6 +15,23 @@ The back-end project is using the [Onion Architecture](http://jeffreypalermo.com
 
 The rule of onion architecture says that the core of the onion should be created in a way where it knows nothing about the other layers. `Infrastructure` can utilize the `Business`, but `Business` should not utilize `Infrastructure`.
 
+## Noteworthy
+
+* Docker Sync
+    * This tool is installed only Mac OSX clients to improve the performance of File IO when mounting a host Mac OSX project in a linux container.
+    * Unfortunately the windows support is too complex to be useable (imho).
+    * Hopefully this isn't necessary in the future as Microsoft and Docker invest in the development workflow story between the two technologies.
+
+* Environment variables strategy
+    * The SDK, Docker and .NET Core all leverage the `.env` file (one configuration to rule them all)
+    * .NET Core `appsettings.json` should only be absolutely static settings. As soon as something becomes configurable, bubble it up the `.env` and the respective `.env.{environment}.sample` file.
+
+* Logging
+    * .NET Core `Program.cs` demonstrates using SeriLog in .NET Core v2. Allowing for dependency injection of `ILogger<T>` in `Startup.cs`
+
+* Windows Development
+    * Unfortunately at this time, the windows development environment is too slow for me to advocate for its use. For windows users, simply set `STARTUP_SERVICES` to `database` so you can leverage that part of the infrastructure while running `./sdk run-web` to build the dotnet and webpack asset files locally.
+
 
 ## Running the Project
 **Pre-requisites**
@@ -26,7 +43,7 @@ In order to run the project, the following technologies will need to be installe
     * [Windows](https://download.docker.com/win/stable/Docker%20for%20Windows%20Installer.exe)
 
 * SDK Permissions
-    * With your terminal/shell of choice, run `chmod +x sdk` in the root of this repository
+    * With your bash shell of choice, run `chmod +x sdk` in the root of this repository
     * Follow that up with `./sdk` to verify that it worked. If all is well, you'll see current usage information about the CLI.
     
 **Launching**
@@ -54,7 +71,7 @@ Note: If you want to explore the SDK in more detail, simply run `./sdk` and read
 ## SDK Command Reference
 
 Command                                  | Description
------------------------------------------|------------------
+-----------------------------------------|-----------------------------------------------
 `./sdk`                                  | Displays help describing commands and examples
 `./sdk clean`                            | Removes project related images and kills all containers based on those images
 `./sdk clean-migration [migration-name]` | Create new dotnet entity framework migration
@@ -72,7 +89,7 @@ Command                                  | Description
 `./sdk run-web --no-restore`             | Same as `run-web`, but skips npm and nuget package restores
 
 
-**Troubleshooting**
+## Troubleshooting
 
 * Default ports are already in use in my machine OR I'd simply like to change it...
     * Provided you've run the `./sdk` at least once (in any capacity), you should have a `.env` file in your project (if not, see the ".env is missing")
