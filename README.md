@@ -46,7 +46,7 @@ In order to run the project, the following technologies will need to be installe
         * Configure 'Settings > Shared Drives > C' to be shareable
 
 * SDK Permissions
-    * With your bash shell of choice, run `chmod +x sdk` in the root of this repository
+    * With your bash shell of choice, run `sudo chmod +x sdk` in the root of this repository
     * Follow that up with `./sdk` to verify that it worked. If all is well, you'll see current usage information about the CLI.
     
 **Launching**
