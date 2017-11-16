@@ -184,9 +184,7 @@ runDebugBuild() {
 
     # Mac-only startup
     if [[ $isMac = true ]]; then
-        if ! [ $flagFast = true ]; then
-            docker-sync clean # we clean up to ensure docker-sync isn't caching files
-        fi
+        docker-sync clean # we clean up to ensure docker-sync isn't caching files
         showMessage "Starting Mac OSX and Docker Linux file syncing bridge (via docker sync)..."
         docker-sync start # if it is already started, who cares
     fi
