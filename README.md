@@ -77,7 +77,7 @@ Command                                  | Description
 -----------------------------------------|-----------------------------------------------
 `./sdk`                                  | Displays help describing commands and examples
 `./sdk clean`                            | Removes project related images and kills all containers based on those images
-`./sdk clean-migration [migration-name]` | Create new dotnet entity framework migration.<br>Does not require valid database configuration.
+`./sdk create-migration [migration-name]` | Create new dotnet entity framework migration.<br>Does not require valid database configuration.
 `./sdk create-release [version]`         | Builds a release build image with the supplied version<br>tag and deploys it to the configured docker hub repository  
 `./sdk delete-migration`                 | Removes most recent entity framework migration.<br>Requires valid database configuration.
 `./sdk dotnet-build`                     | Build the dotnet solution from the root of the project. 
@@ -112,6 +112,15 @@ Command                                  | Description
 
 
 ## Troubleshooting
+
+* Changes I'm making are not being updated to the browser
+    * First off, simply try to restart you current command
+        * End the current process: `Ctrl + C`
+        * Restart: If using `--fast`, re-run `./sdk run --fast`
+    * Secondly, if that doesn't do it, try running the normal `run` via `./sdk run`
+    * Finally, if all else fails, perform a full clean and run
+        * `./sdk clean`
+        * `./sdk run`
 
 * Default ports are already in use in my machine OR I'd simply like to change it...
     * Provided you've run the `./sdk` at least once (in any capacity), you should have a `.env` file in your project (if not, see the ".env is missing")
