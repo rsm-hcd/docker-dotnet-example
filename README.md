@@ -44,6 +44,7 @@ In order to run the project, the following technologies will need to be installe
     * [Windows](https://download.docker.com/win/stable/Docker%20for%20Windows%20Installer.exe)
         * Make sure to allocate at least 4 GB of RAM to docker. Otherwise MSSQL won't work.
         * Configure 'Settings > Shared Drives > C' to be shareable
+        * Make sure the Windows 10 Creators update is installed (Windows 10, version 1709). 
 
 * SDK Permissions
     * With your bash shell of choice, run `sudo chmod +x sdk` in the root of this repository
