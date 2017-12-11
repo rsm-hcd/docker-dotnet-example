@@ -79,7 +79,7 @@ Using Microsoft SQL Server Management Studio use the following details:
     * Note: On some systems, you may need to replace `localhost` with `127.0.0.1` or `0.0.0.0`.
 * Authentication: SQL Server Authentication
 * Login: `{DATABASE_USER}` (ex. `sa`)
-* Password; `{DATABASE_PASSWORD}`
+* Password: `{DATABASE_PASSWORD}`
 
 
 ## SDK Command Reference
@@ -145,4 +145,6 @@ Command                                  | Description
 * Trying to run `dotnet run` manually
     * Sure, you'll have to manually load the `.env` file OR set them yourself on your system. Otherwise dotnet will likely runtime error due to configuration settings missing.
 
-
+* Unable to bind to localhost:5XXXX on the IPv6 loopback interface
+    * Some editors will generate configuration files containing an alternative port number (ie. when you debug). Unfortunately, that file can superceed kestrels port number you set via the `DATABASE_PORT` flag.
+        * Do a recursive search through the repository on your machine for that port number (ie. 51247), remove the section from the file, and retry.
