@@ -72,6 +72,16 @@ If everything worked properly, you should be on your way to making changes, as t
 Note: If you want to explore the SDK in more detail, simply run `./sdk` and read the available commands and examples
 
 
+## Managing the database
+
+Using Microsoft SQL Server Management Studio use the following details:
+* Server name: `localhost,{DATABASE_PORT}` (ex. `localhost,1533`)
+    * Note: On some systems, you may need to replace `localhost` with `127.0.0.1` or `0.0.0.0`.
+* Authentication: SQL Server Authentication
+* Login: `{DATABASE_USER}` (ex. `sa`)
+* Password; `{DATABASE_PASSWORD}`
+
+
 ## SDK Command Reference
 
 Command                                  | Description
