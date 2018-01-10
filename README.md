@@ -33,37 +33,37 @@ The rule of onion architecture says that the core of the onion should be created
     * Unfortunately at this time, the windows development environment is too slow for me to advocate for its use. For windows users, simply set `STARTUP_SERVICES` to `database` so you can leverage that part of the infrastructure while running `./sdk run-web` to build the dotnet and webpack asset files locally.
 
 
-## Running the Project
-**Pre-requisites**
+## System setup
 
-In order to run the project, the following technologies will need to be installed:
+Start by cloning the repository using `git clone REPO`
+* From a bash window (terminal or command prompt), change the directory to the newly created repository
 
-* Docker
-    * [Mac](  https://download.docker.com/mac/stable/Docker.dmg)
-        * Make sure to allocate at least 4 GB of RAM to docker. Otherwise MSSQL won't work.
-    * [Windows](https://download.docker.com/win/stable/Docker%20for%20Windows%20Installer.exe)
-        * Make sure to allocate at least 4 GB of RAM to docker. Otherwise MSSQL won't work.
-        * Configure 'Settings > Shared Drives > C' to be shareable
-        * Make sure the Windows 10 Creators update is installed (Windows 10, version 1709). 
+Now follow instructions for your operating system...
 
-* SDK Permissions
-    * With your bash shell of choice, run `sudo chmod +x sdk` in the root of this repository
+#### Mac
+* Install & Run [Docker](https://download.docker.com/mac/stable/Docker.dmg)
+    * Make sure to allocate at least 4 GB of RAM to docker. Otherwise MSSQL won't work.
+* Increase SDK CLI permissions
+    * With your terminal/shell of choice, run `sudo chmod +x sdk` in the root of this repository
     * Follow that up with `./sdk` to verify that it worked. If all is well, you'll see current usage information about the CLI.
-    
-**Launching**
+* From the bash window, execute the following `./sdk run`
+* After running that script, you may not want to keep installing node modules. For convenience, you can run `./sdk run --fast` which will only use cached docker layers and run the `dotnet run` portion of the previous script.
 
-* Start by cloning the repository using `git clone REPO`
-    * From a bash window (terminal or command prompt), change the directory to the newly created repository
-
-* Simplified approach: 100% Docker (best for heavy front-end development)
-    * From the bash window, execute the following `./sdk run`
-    * After running that script, you may not want to keep installing node modules. For convenience, you can run `./sdk run --fast` which will only use cached docker layers and run the `dotnet run` portion of the previous script.
-
-* Advanced approach: Docker for the database, Local for Web
-    * Open the `.env` file and set STARTUP_SERVICES to be `STARTUP_SERVICES=database`
-    * From the bash window, start up the database with docker via `./sdk run`
-    * Open a second bash window, start up the web spefically with `./sdk run-web`
-
+#### Windows
+* Ensure Windows 10 Creators update is installed (Windows 10, version 1709).
+* Enable Hardware Virtualization on your computer (likely BIOS change)
+* Install latest version 2 [Dotnet SDK](https://www.microsoft.com/net/download/windows)
+* Install [Node](https://nodejs.org/en/download/)
+* [Enable Hyper-V](https://docs.docker.com/docker-for-windows/troubleshoot/#hyper-v)
+* Install & Run [Docker](https://download.docker.com/win/stable/Docker%20for%20Windows%20Installer.exe)
+    * Make sure to allocate at least 4 GB of RAM to docker. Otherwise MSSQL won't work.
+    * Configure 'Docker Settings > Shared Drives > C' to be shareable
+* Increase SDK CLI permissions
+    * With your terminal/shell of choice, run `sudo chmod +x sdk` in the root of this repository
+    * Follow that up with `./sdk` to verify that it worked. If all is well, you'll see current usage information about the CLI.
+* Open the `.env` file and set STARTUP_SERVICES to be `STARTUP_SERVICES=database`
+* From the bash window (running as administrator), start up the database with docker via `./sdk run`
+* Open a second bash window (running as administrator), start up the web specifically with `./sdk run-web`
 
 After the script has finished, you should see the port number which the website will be using. You can open up your favorite browser and navigate to `http://localhost:PORT` OR just run `./sdk open` :).
 
