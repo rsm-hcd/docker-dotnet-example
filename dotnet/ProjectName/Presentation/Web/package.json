@@ -3,9 +3,9 @@
   "private": true,
   "version": "0.0.0",
   "scripts": {
-    "clean-wwwroot": "rm -rf wwwroot",
     "build": "dotnet build",
-    "start": "npm run clean-wwwroot && dotnet run"
+    "clean-wwwroot": "rm -rf wwwroot",
+    "start": "npm run clean-wwwroot && node node_modules/webpack/bin/webpack.js --config webpack.config.vendor.js && node node_modules/webpack/bin/webpack.js && dotnet run"
   },
   "devDependencies": {
     "@types/history": "4.6.0",
