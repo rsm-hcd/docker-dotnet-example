@@ -19,11 +19,8 @@ else
     echo "Restoring npm packages..."
     rm -rf node_modules/node-sass
     npm install
-
-    echo "Cleaning wwwroot folder..."
-    rm -rf wwwroot
-
-    echo "Running dotnet project. Please wait..."
-    dotnet run
+    
+    echo "Cleaning wwwroot folder and running dotnet project via npm"
+    npm run start
 
 fi
